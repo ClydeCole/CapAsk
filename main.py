@@ -2,10 +2,9 @@ import logging
 import yaml
 from pathlib import Path
 
-from openai import OpenAI
-
 import adb_screencap
-import ai
+from adb_notify import Notify
+from ai import AiAsk
 
 # ----------------------------------------------------------------------
 # 全域設定
@@ -61,5 +60,9 @@ if __name__ == '__main__':
     adb_screencap.capture(serial, cap_path, binary)
 
     # ai 發送圖片
-    ask = ai.AiAsk(cfg)
-    ask.image()
+    ask = AiAsk(cfg)
+    ai_result = ask.image()
+
+    # 通過通知將答案發送給手機
+    notify = Notify(cfg)
+    notify.send_notify(ai_result)

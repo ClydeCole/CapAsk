@@ -56,9 +56,7 @@ class AiAsk:
             max_tokens=self.max_tokens,
             timeout=self.timeout,
         )
-        print(resp)
-        print("\n=====\n")
-        print(resp.choices[0].message.content)
+        return resp.choices[0].message.content
 
 if __name__ == '__main__':
     import yaml
