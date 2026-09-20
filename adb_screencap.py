@@ -22,7 +22,7 @@ def get_default_serial(binary: str = "adb") -> str:
         parts = line.strip().split()
         if len(parts) >= 2 and parts[1] == "device":
             devices.append(parts[0])
-            logging.info(f"設備獲取成功{devices}")
+            log.info(f"設備獲取成功{devices}")
 
     if not devices:
         raise DeviceError("未檢測到已連線的ADB 設備(state=device)")
@@ -42,7 +42,7 @@ def capture(serial: str = "", save_path: Path = "tmp/screen.png", binary: str = 
     """
 
     if not serial:
-        logging.info("獲取設備序列號")
+        log.info("獲取設備序列號")
         serial = get_default_serial()
 
     # (1) 命令: adb -s <序列號> exec-out screencap -p
@@ -52,14 +52,14 @@ def capture(serial: str = "", save_path: Path = "tmp/screen.png", binary: str = 
     try:
         with open(save_path, "wb") as fh:
             start = time.time()
-            logging.info("執行截圖")
+            log.info("執行截圖")
             proc = subprocess.run(cmd, stdout=fh, timeout=10)
-            logging.info(f"截圖完畢, 消耗時間: {time.time() - start:.4f}s")
+            log.info(f"截圖完畢, 消耗時間: {time.time() - start:.4f}s")
 
-    except OSError as exc:
-        raise DeviceError(f"无法启动 adb: {exc}") from exc
-    except subprocess.TimeoutExpired as exc:
-        raise DeviceError(f"screencap 超时(10s): {exc}") from exc
+    except OSError as e:
+        raise DeviceError(f"无法启动 adb: {e}") from e
+    except subprocess.TimeoutExpired as e:
+        raise DeviceError(f"screencap 超时(10s): {e}") from e
 
     # (3) 返回码非 0 = 失败（手机没连上、设备状态不对等）
     if proc.returncode != 0:
