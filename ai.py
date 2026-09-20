@@ -1,7 +1,7 @@
 import logging
 import sys
 from pathlib import Path
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -29,11 +29,14 @@ class AiAsk:
     def image(self):
         # 直接讀取二進制並發送
         log.info(f"將圖片上傳{self.model}...")
-        with open(BASE_DIR / "tmp" / "screen.png", "rb") as f:
-            file_obj = self.client.files.create(
-                file=f,
-                purpose="user_data"
-            )
+        try:
+            with open(BASE_DIR / "tmp" / "screen.png", "rb") as f:
+                file_obj = self.client.files.create(
+                    file=f,
+                    purpose="user_data"
+                )
+        except OpenAIError as e:
+            raise AiError("AI 請求發送失敗, 請檢查你的網路或者API KEY") from e
         log.info(f"上傳成功, file_id: {file_obj.id}")
 
         log.info(f"等待{self.model} 的回復")
