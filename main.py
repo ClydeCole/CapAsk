@@ -52,7 +52,7 @@ if __name__ == '__main__':
     cap_cfg = cfg.get("screencap", {})
     cap_dir = Path(cap_cfg.get("save_dir", DEFAULT_SCREENSHOT_DIR))
     cap_dir.mkdir(parents=True, exist_ok=True)
-    cap_path = cap_dir / cap_cfg.get("filename", "screen.png")
+    cap_path = cap_dir / cap_cfg.get("file_name", "screen.png")
 
     # adb 連接電腦
     serial = cfg.get("serial", None)
