@@ -1,57 +1,68 @@
-import base64
 import logging
+import sys
 from pathlib import Path
-from openai import OpenAI, OpenAIError
+from openai import OpenAI
+
+BASE_DIR = Path(__file__).resolve().parent
 
 log = logging.getLogger(__name__)
 
 class AiError(RuntimeError):
     pass
 
+class AiAsk:
+    def __init__(self, cfg: dict):
+        ai_cfg = cfg.get("ai", {})
 
-def ask_image(client: OpenAI, image_path: Path, prompt: str,
-              *, model: str = "deepseek-flash", max_tokens: int = 600) -> str:
-    """
-    將一張圖片發個ai, 讓他返回回答的內容
-    失敗(鉴权/超时/网络等)時openai 包自會拋出異常, 直接往上冒;
-    """
-    # (1) 轉base64
-    with open(image_path, "rb") as fh:
-        b64 = base64.b64encode(fh.read()).decode("utf-8")
-    img_uri = f"data:image/png;base64,{b64}"
+        self.api_key = ai_cfg.get("api_key", "")
+        self.base_url = ai_cfg.get("base_url", "https://api.deepseek.com").rstrip("/")
+        self.model = ai_cfg.get("model", "deepseek-flash")
+        self.max_tokens = int(ai_cfg.get("max_tokens", 2000))
+        self.timeout = int(ai_cfg.get("timeout", 60))
+        self.system_prompt = ai_cfg.get("system_prompt", "")
+        self.client = OpenAI(
+            api_key=self.api_key,
+            base_url=self.base_url,
+        )
+        log.info("初始化AI完畢")
 
-    # (2) 向AI 請求
-    log.info(f"正在向{model} 發送請求")
-    try:
+    def image(self):
+        # 直接讀取二進制並發送
+        log.info(f"將圖片上傳{self.model}...")
+        with open(BASE_DIR / "tmp" / "screen.png", "rb") as f:
+            file_obj = self.client.files.create(
+                file=f,
+                purpose="user_data"
+            )
+        log.info(f"上傳成功, file_id: {file_obj.id}")
+
+        log.info(f"等待{self.model} 的回復")
+        # 發送對話
         # noinspection PyTypeChecker
-        resp = client.chat.completions.create(
-            model=model,
+        resp = self.client.chat.completions.create(
+            model=self.model,
             messages=[
+                {"role": "system", "content": self.system_prompt},
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": img_uri}},
+                        {
+                            "type": "file",
+                            "file_id": file_obj.id,
+                        }
                     ],
-                }
+                },
             ],
-            max_tokens=max_tokens,
+            max_tokens=self.max_tokens,
+            timeout=self.timeout,
         )
-    except OpenAIError as exc:
-        raise AiError(f"AI 發送信息失敗, 檢查API key 或模型等. 詳細信息: {exc}") from None
-
-    # (3) 提取回答
-    reply = (resp.choices[0].message.content or "").strip()
-    if not reply:
-        raise AiError("AI 回復內容為空, 請重試") # content 為空字串或None
-    log.info(f"{model} 回答完畢")
-    return reply
+        print(resp)
+        print("\n=====\n")
+        print(resp.choices[0].message.content)
 
 if __name__ == '__main__':
-    client = OpenAI(
-        api_key="sk-xxx",
-        base_url="https://api.deepseek.com"
-    )
-
-    reply = ask_image(client=client, image_path=Path("./tmp/screen.png"), prompt="請辨識這張圖片中的文字, 將文字輸出. 然後在最後面回答答案, 以及你為什麼選擇這個答案")
-    print(reply)
+    import yaml
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    with open(BASE_DIR / "config.yaml", "r", encoding="utf-8") as f:
+        cfg = yaml.safe_load(f)
+    AiAsk(cfg).image()
