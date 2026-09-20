@@ -1,4 +1,4 @@
-# OCR AskQ
+# CapAsk
 
 透過ADB 截取Android 手機目前畫面, 交由AI 分析圖片中的題目並給出答案, 最後以Termux 通知把答案推回手機, 實現一鍵截圖答題的自動化流程.
 
