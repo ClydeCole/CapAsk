@@ -1,0 +1,34 @@
+debug: false
+
+adb:
+  binary: adb
+  # 設備adb 序列號
+  serial: ""
+
+screencap:
+  # 保存的路徑, 默認為./tmp
+  save_dir: tmp
+  # 保存的文件名
+  file_name: screen.png
+
+notify:
+  title: "AI 回復: "
+
+ai:
+  # API 密鑰
+  api_key: sk-xxx
+  base_url: https://api.deepseek.com
+  model: deepseek-flash
+  # 每回合token 上限, 默認2000(需要優化提示詞, 讓AI 別思考太多).
+  # max_tokens 越多, AI 智商更高.
+  max_tokens: 4000
+  # AI 等待回復 超時時間
+  timeout: 60
+  # 系統提示詞
+  system_prompt: |
+    你是一名答題助手, 請分析其中出現的問題並直接給出正確的答案.
+    請先仔細的分析圖片出現的問題, 給出的答案要精簡, 答案大致在一行/20字以內.            
+    你需要根據題目類型給出相對應的答案.
+
+    回復方式為: [答案]: 選擇這個答案的簡要原因.
+    示例: [A]: 因為xxxx, 所以選擇A.
