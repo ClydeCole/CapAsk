@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# 虛擬環境
+.venv/
+
+# 執行時產物
+tmp/
+
+# IDE
+.idea/
+
+# 機密(api_key 等)
+*.env
+
+# 配置文件
+config.yaml
