@@ -2,8 +2,6 @@ import logging
 import yaml
 from pathlib import Path
 
-import screencap.adb as screencap_adb
-# import screencap.root as screencap_root
 from notify import Notify
 # from notify.root import
 from ai import AiAsk
@@ -60,12 +58,21 @@ if __name__ == '__main__':
     cap_path = cap_dir / cap_cfg.get("save_name", "screen.png")
 
     if cfg.get("device") == 1:
-        pass
+        # Termux 本地運行
+        def capture():
+            import screencap.root as screencap
+            cap = screencap.Screencap()
+            cap.capture()
+        capture()
+
     elif cfg.get("device") == 2:
         # adb 連接電腦
-        serial = cfg.get("serial", None)
-        binary = cfg.get("binary", "adb")
-        screencap_adb.capture(serial, cap_path, binary)
+        def capture():
+            import screencap.adb as screencap
+            serial = cfg.get("serial", None)
+            binary = cfg.get("binary", "adb")
+            screencap.capture(serial, cap_path, binary)
+        capture()
     else:
         raise MainError(f"config.yaml 配置錯誤. [ device: {cfg.get('device')} ]")
 
