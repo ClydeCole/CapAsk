@@ -2,9 +2,14 @@ import logging
 import yaml
 from pathlib import Path
 
-import adb_screencap
-from adb_notify import Notify
+import screencap.adb as screencap_adb
+# import screencap.root as screencap_root
+from notify import Notify
+# from notify.root import
 from ai import AiAsk
+
+class MainError(Exception):
+    pass
 
 # ----------------------------------------------------------------------
 # 全域設定
@@ -52,12 +57,17 @@ if __name__ == '__main__':
     cap_cfg = cfg.get("screencap", {})
     cap_dir = Path(cap_cfg.get("save_dir", DEFAULT_SCREENSHOT_DIR))
     cap_dir.mkdir(parents=True, exist_ok=True)
-    cap_path = cap_dir / cap_cfg.get("file_name", "screen.png")
+    cap_path = cap_dir / cap_cfg.get("save_name", "screen.png")
 
-    # adb 連接電腦
-    serial = cfg.get("serial", None)
-    binary = cfg.get("binary", "adb")
-    adb_screencap.capture(serial, cap_path, binary)
+    if cfg.get("device") == 1:
+        pass
+    elif cfg.get("device") == 2:
+        # adb 連接電腦
+        serial = cfg.get("serial", None)
+        binary = cfg.get("binary", "adb")
+        screencap_adb.capture(serial, cap_path, binary)
+    else:
+        raise MainError(f"config.yaml 配置錯誤. [ device: {cfg.get('device')} ]")
 
     # ai 發送圖片
     ask = AiAsk(cfg)

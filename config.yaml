@@ -1,5 +1,12 @@
 debug: false
 
+# 如果是Termux 運行選擇 1
+# 如果是adb 連接電腦運行選擇 2
+device: 1
+# 擁有root 權限選擇 1
+# 未擁有root 權限選擇 0
+root: 1
+
 adb:
   binary: adb
   # 設備adb 序列號

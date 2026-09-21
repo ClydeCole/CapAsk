@@ -12,6 +12,8 @@ class Notify:
     def __init__(self, cfg):
         notify_cfg = cfg.get("notify", {})
         self.title = notify_cfg.get("title")
+        # 暫時寫入
+        self.device = cfg.get("device")
         pass
 
     def send_notify(self, message):
@@ -28,5 +30,5 @@ class Notify:
 if __name__ == "__main__":
     with open("config.yaml", "r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f.read())
-    notify = Notify(cfg)
-    notify.send_notify(message="[B]: 因为CPU主要功能是执行程序指令并进行运算，所以选择B。")
+    ntf = Notify(cfg)
+    ntf.send_notify(message="[B]: 因为CPU主要功能是执行程序指令并进行运算，所以选择B。")

@@ -6,7 +6,6 @@ from pathlib import Path
 log = logging.getLogger(__name__)
 
 class DeviceError(RuntimeError):
-    """設備操作失敗, 統一拋這個異常, 讓上層(主循環)兜底處理."""
     pass
 
 def get_default_serial(binary: str = "adb") -> str:
