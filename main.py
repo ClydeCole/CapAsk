@@ -16,7 +16,9 @@ log = logging.getLogger("main")
 # ----------------------------------------------------------------------
 # 工具函式
 # ----------------------------------------------------------------------
-def setup_logging(debug: bool = False) -> None:
+
+#加載logging
+def load_logging(debug: bool = False) -> None:
     """設定 root logger"""
     level = logging.DEBUG if debug else logging.INFO
     logging.basicConfig(
@@ -25,6 +27,7 @@ def setup_logging(debug: bool = False) -> None:
         datefmt="%H:%M:%S",
     )
 
+# 加載配置文件
 def load_config(path: Path) -> dict:
     """讀取 YAML 配置; 檔案不存在或格式錯誤時直接中止並提示."""
     if not path.is_file():
@@ -36,16 +39,18 @@ def load_config(path: Path) -> dict:
         raise SystemExit(f"[FATAL] 配置檔格式錯誤: {e}") from e
     return data
 
-# ----------------------------------------------------------------------
-# 主流程
-# ----------------------------------------------------------------------
-
-def load_save_path(config_screencap) -> Path:
+# 加載保存路徑
+def load_save_path(config_screencap: dict) -> Path:
+    """
+    :param config_screencap: 將config 內的screencap 輸入進來
+    :return: 一個Path 路徑, 默認輸出為絕對路徑: /xxx/xxx/[項目根目錄]/tmp/screenshot.png
+    """
     cap_dir = Path(config_screencap.get("save_dir", DEFAULT_SCREENSHOT_DIR)).resolve()
     cap_dir.mkdir(parents=True, exist_ok=True)
     cap_path = cap_dir / config_screencap.get("file_name", "screen.png")
     return cap_path
 
+# 對手機畫面進行截圖
 def screencap(device: int) -> None:
     if device == 1:
         # Termux 本地運行
@@ -66,15 +71,23 @@ def screencap(device: int) -> None:
     else:
         raise MainError(f"config.yaml 配置錯誤. [ device: {device} ]")
 
+# 通過通知將答案發送給手機
 def notify(device: int, message: str) -> None:
     from notify import adb
     from notify import root
-    # 通過通知將答案發送給手機
+
     if device == 1:
         root.send_notify(cfg.get("notify_title", ""), message)
     elif device == 2:
         notify = adb.Notify(cfg)
         notify.send_notify(message)
+
+
+# ----------------------------------------------------------------------
+# 主流程
+# ----------------------------------------------------------------------
+
+
 
 # ----------------------------------------------------------------------
 # 程式進入點
@@ -82,7 +95,7 @@ def notify(device: int, message: str) -> None:
 if __name__ == '__main__':
     # 初始化 (只需要一次)
     cfg = load_config(CONFIG_FILE)
-    setup_logging(debug=bool(cfg.get("debug", False)))
+    load_logging(debug=bool(cfg.get("debug", False)))
     # 獲取文件保存路徑 (只需要一次)
     CAP_PATH = load_save_path(cfg.get("screencap", {'save_dir': 'tmp', 'file_name': 'screen.png'}))
 
