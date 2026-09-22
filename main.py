@@ -1,9 +1,6 @@
 import logging
 import yaml
 from pathlib import Path
-
-from notify import Notify
-# from notify.root import
 from ai import AiAsk
 
 class MainError(Exception):
@@ -69,6 +66,16 @@ def screencap(device: int) -> None:
     else:
         raise MainError(f"config.yaml 配置錯誤. [ device: {device} ]")
 
+def notify(device: int, message: str) -> None:
+    from notify import adb
+    from notify import root
+    # 通過通知將答案發送給手機
+    if device == 1:
+        root.send_notify(cfg.get("notify_title", ""), message)
+    elif device == 2:
+        notify = adb.Notify(cfg)
+        notify.send_notify(message)
+
 # ----------------------------------------------------------------------
 # 程式進入點
 # ----------------------------------------------------------------------
@@ -85,6 +92,4 @@ if __name__ == '__main__':
     ask = AiAsk(cfg)
     ai_result = ask.image()
 
-    # 通過通知將答案發送給手機
-    notify = Notify(cfg)
-    notify.send_notify(ai_result)
+    notify(cfg.get("device", 1), ai_result)

@@ -78,6 +78,7 @@ class AiAsk:
             ],
             "max_tokens": self.max_tokens,
         })
+        log.info(f"{self.model} 回復成功")
         return resp["choices"][0]["message"]["content"]
 
 if __name__ == '__main__':

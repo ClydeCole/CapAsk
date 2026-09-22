@@ -18,8 +18,7 @@ screencap:
   # 保存的文件名
   file_name: screen.png
 
-notify:
-  title: "AI 回復: "
+notify_title: "AI 回復: "
 
 ai:
   # API 密鑰

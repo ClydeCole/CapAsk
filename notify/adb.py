@@ -10,10 +10,9 @@ class NotifyError(Exception):
 
 class Notify:
     def __init__(self, cfg):
-        notify_cfg = cfg.get("notify", {})
-        self.title = notify_cfg.get("title")
+        self.title = cfg.get("notify_title")
         # 暫時寫入
-        self.device = cfg.get("device")
+        # self.device = cfg.get("device")
         pass
 
     def send_notify(self, message):
