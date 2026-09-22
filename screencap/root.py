@@ -23,7 +23,7 @@ class Screencap:
 
 
     def capture(self):
-        cmd = ["su", "-c", f"screencap -p {self.save_path}"]
+        cmd = ["su", "-c", "screencap", "-p", f"{self.save_path}"]
         start = time.time()
         log.info("執行截圖")
         proc = subprocess.run(cmd, capture_output=True, timeout=10)
