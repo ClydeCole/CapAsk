@@ -7,6 +7,8 @@ device: 1
 # 未擁有root 權限選擇 0
 root: 1
 
+volume_wait_time: 5
+
 adb:
   binary: adb
   # 設備adb 序列號

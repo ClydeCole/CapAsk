@@ -1,4 +1,6 @@
 import logging
+from time import sleep
+
 import yaml
 from pathlib import Path
 from ai import AiAsk
@@ -139,8 +141,13 @@ def wait() -> None:
         except subprocess.TimeoutExpired:
             proc.kill()
 
-def loop() -> None:
+def loop(sleep_time) -> None:
+    """
+    :param sleep_time: 按下音量+ 後等待的時間. 使得調節音量的按鈕消失再進行截圖
+    """
     while True:
+        wait()
+        sleep(sleep_time)
         # 截圖
         screencap(cfg.get("device", 1))
 
@@ -153,6 +160,7 @@ def loop() -> None:
 
         # 等待繼續信號 (音量鍵 +)
         wait()
+        sleep(sleep_time)
 
 
 # ----------------------------------------------------------------------
@@ -166,4 +174,4 @@ if __name__ == '__main__':
     CAP_PATH = load_save_path(cfg.get("screencap", {'save_dir': 'tmp', 'file_name': 'screen.png'}))
 
     # 進入大循環
-    loop()
+    loop(cfg.get("volume_wait_time", 5))
