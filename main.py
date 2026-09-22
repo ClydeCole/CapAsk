@@ -145,9 +145,9 @@ def loop(sleep_time) -> None:
     """
     :param sleep_time: 按下音量+ 後等待的時間. 使得調節音量的按鈕消失再進行截圖
     """
+    wait()
+    sleep(sleep_time)
     while True:
-        wait()
-        sleep(sleep_time)
         # 截圖
         screencap(cfg.get("device", 1))
 
