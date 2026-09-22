@@ -30,7 +30,11 @@ def get_default_serial(binary: str = "adb") -> str:
 
     return devices[0]
 
-def capture(serial: str = "", save_path: Path = "tmp/screen.png", binary: str = "adb") -> None:
+def capture(
+        serial: str = "",
+        save_path: Path = Path(__file__).parent.parent / "tmp" / "screen.png",
+        binary: str = "adb"
+) -> None:
     """
     擷取設備當前螢幕畫面並儲存為 PNG 圖片。
     :param serial: 設備序列號(adb devices 第一列); 若未填寫或為空則自動挑選唯一設備.

@@ -18,7 +18,7 @@ class Screencap:
         # 儲存路徑
         self.__save_dir = Path(cfg.get("screencap", {}).get("save_dir", "tmp"))
         self.__save_dir.mkdir(parents=True, exist_ok=True)
-        self.__save_name = cfg.get("screencap", {}).get("save_name", "screen.png")
+        self.__save_name = cfg.get("screencap", {}).get("file_name", "screen.png")
         self.save_path = Path(__file__).parent.parent / self.__save_dir / self.__save_name
 
 

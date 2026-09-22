@@ -43,21 +43,14 @@ def load_config(path: Path) -> dict:
 # 主流程
 # ----------------------------------------------------------------------
 
-
-# ----------------------------------------------------------------------
-# 程式進入點
-# ----------------------------------------------------------------------
-if __name__ == '__main__':
-    cfg = load_config(CONFIG_FILE)
-    setup_logging(debug=bool(cfg.get("debug", False)))
-
-    # 獲取文件保存路徑
-    cap_cfg = cfg.get("screencap", {})
-    cap_dir = Path(cap_cfg.get("save_dir", DEFAULT_SCREENSHOT_DIR))
+def load_save_path(config_screencap) -> Path:
+    cap_dir = Path(config_screencap.get("save_dir", DEFAULT_SCREENSHOT_DIR)).resolve()
     cap_dir.mkdir(parents=True, exist_ok=True)
-    cap_path = cap_dir / cap_cfg.get("save_name", "screen.png")
+    cap_path = cap_dir / config_screencap.get("file_name", "screen.png")
+    return cap_path
 
-    if cfg.get("device") == 1:
+def screencap(device: int) -> None:
+    if device == 1:
         # Termux 本地運行
         def capture():
             import screencap.root as screencap
@@ -65,16 +58,28 @@ if __name__ == '__main__':
             cap.capture()
         capture()
 
-    elif cfg.get("device") == 2:
+    elif device == 2:
         # adb 連接電腦
         def capture():
             import screencap.adb as screencap
             serial = cfg.get("serial", None)
             binary = cfg.get("binary", "adb")
-            screencap.capture(serial, cap_path, binary)
+            screencap.capture(serial, CAP_PATH, binary)
         capture()
     else:
-        raise MainError(f"config.yaml 配置錯誤. [ device: {cfg.get('device')} ]")
+        raise MainError(f"config.yaml 配置錯誤. [ device: {device} ]")
+
+# ----------------------------------------------------------------------
+# 程式進入點
+# ----------------------------------------------------------------------
+if __name__ == '__main__':
+    # 初始化 (只需要一次)
+    cfg = load_config(CONFIG_FILE)
+    setup_logging(debug=bool(cfg.get("debug", False)))
+    # 獲取文件保存路徑 (只需要一次)
+    CAP_PATH = load_save_path(cfg.get("screencap", {'save_dir': 'tmp', 'file_name': 'screen.png'}))
+
+    screencap(cfg.get("device", 1))
 
     # ai 發送圖片
     ask = AiAsk(cfg)
