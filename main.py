@@ -87,6 +87,72 @@ def notify(device: int, message: str) -> None:
 # 主流程
 # ----------------------------------------------------------------------
 
+def wait() -> None:
+    """
+    等待使用者按下 音量鍵 + (KEY_VOLUMEUP) 後才繼續執行.
+
+    檢測方式: 透過 subprocess 以 root 權限執行 `su -c getevent` 讀取
+    /dev/input/event* 的原始按鍵事件. Android 的 SELinux 不允許一般
+    Termux (untrusted_app) 讀取 /dev/input, 因此必須 root, 第一次執行
+    時手機上會跳出 root 授權 (Magisk/SuperSU) 視窗.
+
+    getevent 原始輸出的格式為: /dev/input/eventX: <type> <code> <value>
+    音量鍵 + 的事件為:
+        type  = 0001 (EV_KEY)
+        code  = 0073 (0x73 = 115, KEY_VOLUMEUP)
+        value = 00000001 (按下; 0=放開, 2=長按自動重複)
+    """
+    # ----------------------------------------------------------------------
+    # AI 修改請注意!
+    #
+    # loop() 與 wait() 兩個函數部分全都為AI 生成,
+    # 實測Termux 可以直接運行, 可能含有BUG
+    # ----------------------------------------------------------------------
+
+    import subprocess
+
+    log.info("wait(): 請按下 音量鍵 + 以繼續 ...")
+    proc = subprocess.Popen(
+        ["su", "-c", "getevent"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+    )
+    try:
+        if proc.stdout is None:
+            raise MainError("無法開啟 getevent 輸出")
+        for line in proc.stdout:
+            cols = line.split()
+            # 範例: ['/dev/input/event3:', '0001', '0073', '00000001']
+            if len(cols) >= 4:
+                _, ev_type, code, value = cols[:4]
+                if ev_type == "0001" and code == "0073" and value == "00000001":
+                    log.info("偵測到 音量鍵 +, 繼續執行")
+                    return
+        # 能走到這裡代表 getevent 已結束 (通常是 root 授權被拒絕)
+        raise MainError("getevent 提前結束: 請確認已授予 root 權限 (su -c getevent) 可正常運作")
+    finally:
+        # 結束流程時把 getevent 關掉, 避免留下孤兒程序
+        proc.terminate()
+        try:
+            proc.wait(timeout=2)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+
+def loop() -> None:
+    while True:
+        # 截圖
+        screencap(cfg.get("device", 1))
+
+        # ai 發送圖片
+        ask = AiAsk(cfg)
+        ai_result = ask.image()
+
+        # 發短信
+        notify(cfg.get("device", 1), ai_result)
+
+        # 等待繼續信號 (音量鍵 +)
+        wait()
 
 
 # ----------------------------------------------------------------------
@@ -99,10 +165,5 @@ if __name__ == '__main__':
     # 獲取文件保存路徑 (只需要一次)
     CAP_PATH = load_save_path(cfg.get("screencap", {'save_dir': 'tmp', 'file_name': 'screen.png'}))
 
-    screencap(cfg.get("device", 1))
-
-    # ai 發送圖片
-    ask = AiAsk(cfg)
-    ai_result = ask.image()
-
-    notify(cfg.get("device", 1), ai_result)
+    # 進入大循環
+    loop()
