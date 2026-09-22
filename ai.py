@@ -13,6 +13,7 @@ import logging
 import sys
 from pathlib import Path
 from urllib import error, request
+from notify.root import send_notify
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -59,6 +60,7 @@ class AiAsk:
             b64_image = base64.b64encode(f.read()).decode("utf-8")
 
         log.info(f"等待{self.model} 的回復")
+        send_notify("运行状态: ", f"等待{self.model} 的回復")
         # 發送對話
         resp = self._post_json(f"{self.base_url}/chat/completions", {
             "model": self.model,
