@@ -17,7 +17,7 @@
 - 軟體
   - Python 版本推薦**3.14** 其他版本應該也可以使用
   - 已安裝且可用的adb (Android Debug Bridge)
-  - Python 套件: openai, pyyaml
+  - Python 套件: pyyaml (AI 呼叫使用內建標準庫, 無需安裝openai)
 - Android
     - 一台已開啟USB 除錯並連線的Android 設備
     - 手機端已安裝Termux, 用於接收通知
@@ -29,7 +29,7 @@
 ### 安裝依賴
 
 ```
-pip install openai pyyaml
+pip install pyyaml
 ```
 
 ### 設定config.yaml
@@ -84,9 +84,9 @@ config.yaml 讀取設定 -> 建立tmp 截圖目錄 -> adb 截取目前畫面(tmp
 
 ### ai.py: AI 模組
 
-1. AiAsk 初始化時以api_key 與base_url 建立OpenAI client, 只要是OpenAI 相容格式的API 皆可使用.
-2. image: 讀取tmp/screen.png 的二進位內容, 用files.create 上傳(purpose=user_data) 取得file_id.
-3. 以chat.completions.create 傳入system_prompt 與file_id, 依max_tokens 與timeout 取得AI 回覆, 最後回傳答案文字.
+1. AiAsk 初始化時讀取api_key 與base_url, 使用標準庫urllib 呼叫OpenAI 相容API, 只要是OpenAI 相容格式的API 皆可使用.
+2. image: 讀取tmp/screen.png 的二進位內容, 以multipart/form-data 上傳到 /files (purpose=user_data) 取得file_id.
+3. 以 POST /chat/completions 傳入system_prompt 與file_id, 依max_tokens 與timeout 取得AI 回覆, 最後回傳答案文字.
 
 ### adb_notify.py: 通知模組
 
