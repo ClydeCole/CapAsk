@@ -6,7 +6,7 @@ log = logging.getLogger(__name__)
 class NotifyError(Exception):
     pass
 
-def send_notify(title:str, message: str) -> None:
+def notify(title:str, message: str) -> None:
     """
     使用Termux 發送一則短信通知.
     :param title: 標題
@@ -22,4 +22,4 @@ def send_notify(title:str, message: str) -> None:
         raise NotifyError(f"通知發送失敗. 詳情: {e.stderr.strip()}") from e
 
 if __name__ == '__main__':
-    send_notify("a", "a")
+    notify("a", "a")

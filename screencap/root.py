@@ -8,8 +8,8 @@ log = logging.getLogger(__name__)
 class ScreenError(RuntimeError):
     pass
 
-def screencap(save_path: Path, save_name: Path) -> None:
-    cmd = ["su", "-c", "screencap", "-p", f"{save_path / save_name}"]
+def screencap(save_file_full_path) -> None:
+    cmd = ["su", "-c", "screencap", "-p", f"{save_file_full_path}"]
     start = time.time()
     log.info("執行截圖")
     try:
