@@ -16,10 +16,10 @@ def send_notify(title:str, message: str) -> None:
     cmd = ["termux-notification", "-t", title, "-c", message]
     try:
         subprocess.run(cmd, capture_output=True, text=True, check=True)
-    except subprocess.CalledProcessError as e:
-        raise NotifyError(f"通知發送失敗. 詳情: {e.stderr.strip()}") from e
     except FileNotFoundError:
         raise NotifyError("找不到termux-notification 命令. 您是否在Termux 中執行此程序? 否安裝了Termux-api?")
+    except subprocess.CalledProcessError as e:
+        raise NotifyError(f"通知發送失敗. 詳情: {e.stderr.strip()}") from e
 
 if __name__ == '__main__':
     send_notify("a", "a")
