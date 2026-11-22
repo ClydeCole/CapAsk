@@ -8,19 +8,9 @@ class XMLError(RuntimeError):
     pass
 
 BOUNDS = re.compile(r'\[(-?\d+),(-?\d+)]\[(-?\d+),(-?\d+)]')
+XML_PATH =  Path("/sdcard/window_dump.xml")
 
-def get_xml_path(device: int) -> tuple:
-    """
-    :return: remote_xml_file_path, local_xml_file_path
-    """
-    local_path = Path(__file__).parent.parent / "tmp" / "window_dump.xml"
-
-    if device == 1:
-        return None, local_path
-    elif device == 2:
-        return Path("/sdcard/window_dump.xml"), local_path
-
-    raise XMLError(f"你的yaml 配置檔案 device:{device} 選項配置錯誤, 請檢查配置文件")
+    # raise XMLError(f"你的yaml 配置檔案 device:{device} 選項配置錯誤, 請檢查配置文件")
 
 def get_screen_texts(device: int, binary: str = "adb", serial: str = "") -> list[str]:
     """回傳目前螢幕上的所有文字 (由上到下, 由左到右, 已去重).
@@ -29,31 +19,30 @@ def get_screen_texts(device: int, binary: str = "adb", serial: str = "") -> list
     :param binary: adb 執行檔名稱或完整路徑.
     :return: 文字清單, 例如 ["設定", "Wi-Fi", "藍牙"].
     """
-    xml_r, xml_l = get_xml_path(device)
+    # xml_r, xml_l = get_xml_path(device)
 
     # 1. 創建adb 命令
     cmd = [binary]
     if serial:
         cmd = [binary, "-s", serial]
 
-    # 2. 叫手機產生XML 檔案
-    xml = subprocess.run(
-        # device: 1, xml_l: ./tmp/window_dump.xml
-        # device: 2, xml_r: /sdcard/window_dump.xml
-        cmd + ["shell", "uiautomator", "dump", str(xml_l) if not xml_r else str(xml_r)],
+    # 2. 叫手機產生XML 檔案, 儲存到XML_PATH
+    dump = subprocess.run(
+        cmd + ["shell", "uiautomator", "dump", str(XML_PATH)],
         capture_output=True, text=True, check=True
     )
 
-    # 將產生的XML 檔案, 丟給解析
-    if device == 1:
-        return _parse_xml(xml.stdout)
+    # 3. 將產生的XML 檔案, 丟給解析
 
-    # 3. 如果程序是在電腦上執行, 則將手機上的XML 檔案複製到電腦
-    xml = subprocess.run(
-        cmd + ["exec-out", "cat", str(xml_r)],
-        capture_output=True, text=True, check=True
-    ).stdout
-    return _parse_xml(xml)
+    if device == 2:
+        # 如果程序是在電腦上執行, 則將手機上的XML 檔案的內容複製到電腦傳輸給_parse_xml
+        dump = subprocess.run(
+            cmd + ["exec-out", "cat", str(XML_PATH)],
+            capture_output=True, text=True, check=True
+        ).stdout
+        return _parse_xml(dump)
+    # 一臺設備情況
+    return _parse_xml(dump.stdout)
 
 def _parse_xml(xml: str) -> list[str]:
     """把 UI 階層 XML 轉成文字清單."""
